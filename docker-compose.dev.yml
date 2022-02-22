@@ -1,0 +1,21 @@
+version: '3.5'
+
+services:
+  db:
+    restart: always
+    image: postgres:12
+    container_name: filezone-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: filezone_db
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+      - ./db/setup:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 5432:5432
