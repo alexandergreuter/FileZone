@@ -1,4 +1,5 @@
 using FileZone;
+using FileZone.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<IUploadService, UploadService>();
 builder.Services.AddDbContext<FileZoneDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("FileZone"));
