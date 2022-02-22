@@ -1,0 +1,19 @@
+{
+  "folders": [
+    {
+      "name": "FileZone",
+      "path": "./"
+    },
+    {
+      "name": "ASP.NET Core Web API",
+      "path": "./api"
+    },
+    {
+      "name": "Next.js Frontend",
+      "path": "./client"
+    }
+  ],
+  "settings": {
+    "conventionalCommits.scopes": ["webapi"]
+  }
+}
