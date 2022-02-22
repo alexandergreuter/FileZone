@@ -1,7 +1,8 @@
+using FileZone.Dto;
 using FileZone.Models;
 using FileZone.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace FileZone.Controllers
 {
@@ -10,18 +11,20 @@ namespace FileZone.Controllers
     [ApiController]
     public class UploadsController : ControllerBase
     {
+        private readonly IConfiguration _config;
         private readonly IUploadsService _uploadService;
 
-        public UploadsController(IUploadsService uploadService)
+        public UploadsController(IConfiguration config, IUploadsService uploadService)
         {
+            _config = config;
             _uploadService = uploadService;
         }
 
-        // GET: api/files/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Upload>> GetUpload(long id)
+        // GET: api/files/{hash}
+        [HttpGet("{hash}")]
+        public async Task<ActionResult<Upload>> GetUpload(string hash)
         {
-            var file = await _uploadService.GetUpload(id);
+            var file = await _uploadService.GetUploadByHash(hash);
 
             if (file == null)
             {
@@ -31,14 +34,51 @@ namespace FileZone.Controllers
             return file;
         }
 
+        // GET: api/files/5/download
+        [HttpGet("{hash}/download")]
+        public async Task<ActionResult> DownloadUpload(string hash)
+        {
+            const string DefaultContentType = "application/octet-stream";
+
+            var file = await _uploadService.GetUploadByHash(hash);
+
+            if (file == null)
+            {
+                return NotFound();
+            }
+
+            var filePath = Path.Combine(_config["UploadsPath"], file.Filename);
+
+            var provider = new FileExtensionContentTypeProvider();
+
+            if (!provider.TryGetContentType(filePath, out string? contentType))
+            {
+                contentType = DefaultContentType;
+            }
+
+            Stream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
+            return new FileStreamResult(stream, contentType)
+            {
+                FileDownloadName = file.Filename
+            };
+        }
+
         // POST: api/files
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Upload>> PostUpload([FromBody] Upload file)
+        public async Task<ActionResult<Upload>> PostUpload([FromForm] CreateFileDto file)
         {
-            var f = await _uploadService.CreateUpload(file);
+            var filename = Path.GetRandomFileName() + Path.GetExtension(file.File.FileName);
 
-            return CreatedAtAction(nameof(GetUpload), new { id = f.Id }, f);
+            using (var stream = new FileStream(Path.Join(_config["UploadsPath"], filename).ToString(), FileMode.Create))
+            {
+                await file.File.CopyToAsync(stream);
+            }
+
+            var f = await _uploadService.CreateUpload(file, filename);
+
+            return CreatedAtAction(nameof(GetUpload), new { hash = f.Hash }, f);
         }
     }
 }

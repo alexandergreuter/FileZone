@@ -1,3 +1,4 @@
+using FileZone.Dto;
 using FileZone.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,9 +18,21 @@ public class UploadsService : IUploadsService
         return await _context.Uploads.ToListAsync();
     }
 
-    public async Task<Upload?> GetUpload(long id)
+    public async Task<Upload?> GetUploadById(long id)
     {
         var file = await _context.Uploads.FindAsync(id);
+
+        if (file == null)
+        {
+            return null;
+        }
+
+        return file;
+    }
+
+    public async Task<Upload?> GetUploadByHash(string hash)
+    {
+        var file = await _context.Uploads.FirstOrDefaultAsync(f => f.Hash == hash);
 
         if (file == null)
         {
@@ -57,8 +70,15 @@ public class UploadsService : IUploadsService
         return file;
     }
 
-    public async Task<Upload> CreateUpload(Upload file)
+    public async Task<Upload> CreateUpload(CreateFileDto dto, string filename)
     {
+        var file = new Upload
+        {
+            Filename = filename,
+            Title = dto.Title,
+            Description = dto.Description,
+            Hash = Guid.NewGuid().ToString(),
+        };
         _context.Uploads.Add(file);
         await _context.SaveChangesAsync();
 
