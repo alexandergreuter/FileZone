@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FileZone.Services;
 
-public class UploadService : IUploadService
+public class UploadsService : IUploadsService
 {
     private readonly FileZoneDbContext _context;
 
-    public UploadService(FileZoneDbContext context)
+    public UploadsService(FileZoneDbContext context)
     {
         _context = context;
     }

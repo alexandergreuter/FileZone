@@ -2,7 +2,7 @@ using FileZone.Models;
 
 namespace FileZone.Services;
 
-public interface IUploadService
+public interface IUploadsService
 {
     Task<List<Upload>> GetUploads();
     Task<Upload?> GetUpload(long id);

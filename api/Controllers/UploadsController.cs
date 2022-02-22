@@ -10,9 +10,9 @@ namespace FileZone.Controllers
     [ApiController]
     public class UploadsController : ControllerBase
     {
-        private readonly IUploadService _uploadService;
+        private readonly IUploadsService _uploadService;
 
-        public UploadsController(IUploadService uploadService)
+        public UploadsController(IUploadsService uploadService)
         {
             _uploadService = uploadService;
         }
