@@ -22,7 +22,7 @@ namespace FileZone.Controllers
 
         // GET: api/files/{hash}
         [HttpGet("{hash}")]
-        public async Task<ActionResult<Upload>> GetUpload(string hash)
+        public async Task<ActionResult<Upload>> GetUpload(string hash, [FromQuery(Name = "password")] string password)
         {
             var file = await _uploadService.GetUploadByHash(hash);
 
@@ -31,12 +31,24 @@ namespace FileZone.Controllers
                 return NotFound();
             }
 
+            if (file.ExpiresAt != null && file.ExpiresAt < DateTime.Now)
+            {
+                return NotFound();
+            }
+
+            Request.Headers.TryGetValue("X-File-Password", out var headerPassword);
+
+            if (!_uploadService.AuthorizedUpload(file, password) && !_uploadService.AuthorizedUpload(file, headerPassword))
+            {
+                return Unauthorized();
+            }
+
             return file;
         }
 
         // GET: api/files/5/download
         [HttpGet("{hash}/download")]
-        public async Task<ActionResult> DownloadUpload(string hash)
+        public async Task<ActionResult> DownloadUpload(string hash, [FromQuery(Name = "password")] string password)
         {
             const string DefaultContentType = "application/octet-stream";
 
@@ -45,6 +57,18 @@ namespace FileZone.Controllers
             if (file == null)
             {
                 return NotFound();
+            }
+
+            if (file.ExpiresAt != null && file.ExpiresAt < DateTime.Now)
+            {
+                return NotFound();
+            }
+
+            Request.Headers.TryGetValue("X-File-Password", out var headerPassword);
+
+            if (!_uploadService.AuthorizedUpload(file, password) && !_uploadService.AuthorizedUpload(file, headerPassword))
+            {
+                return Unauthorized();
             }
 
             var filePath = Path.Combine(_config["UploadsPath"], file.Filename);
