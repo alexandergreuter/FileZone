@@ -12,4 +12,5 @@ public interface IUploadsService
     Task<Upload> CreateUpload(CreateFileDto file, string filename);
     void DeleteUpload(long id);
     bool UploadExists(long id);
+    bool AuthorizedUpload(Upload file, string password);
 }

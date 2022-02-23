@@ -1,8 +1,15 @@
+using System.Globalization;
 using FileZone;
 using FileZone.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+      {
+          options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("de-CH");
+          options.SupportedCultures = new List<CultureInfo> { new CultureInfo("de-CH") };
+      });
 
 // Add services to the container.
 

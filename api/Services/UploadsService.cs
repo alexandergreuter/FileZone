@@ -72,12 +72,19 @@ public class UploadsService : IUploadsService
 
     public async Task<Upload> CreateUpload(CreateFileDto dto, string filename)
     {
+        string? password = null;
+        if (dto.Password != null)
+        {
+            password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+        }
         var file = new Upload
         {
             Filename = filename,
             Title = dto.Title,
             Description = dto.Description,
             Hash = Guid.NewGuid().ToString(),
+            Password = password,
+            ExpiresAt = dto.ExpiresAt
         };
         _context.Uploads.Add(file);
         await _context.SaveChangesAsync();
@@ -99,5 +106,17 @@ public class UploadsService : IUploadsService
     public bool UploadExists(long id)
     {
         return _context.Uploads.Any(e => e.Id == id);
+    }
+
+    public bool AuthorizedUpload(Upload file, string password)
+    {
+        if (file.Password == null)
+        {
+            return true;
+        }
+        else
+        {
+            return BCrypt.Net.BCrypt.Verify(password, file.Password);
+        }
     }
 }
