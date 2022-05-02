@@ -66,7 +66,10 @@ namespace FileZone.Controllers
 
         // POST: api/files
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // Limited to 10GIB
         [HttpPost]
+        [RequestFormLimits(MultipartBodyLengthLimit = 10737418240)]
+        [RequestSizeLimit(10737418240)]
         public async Task<ActionResult<Upload>> PostUpload([FromForm] CreateFileDto file)
         {
             var filename = Path.GetRandomFileName() + Path.GetExtension(file.File.FileName);
